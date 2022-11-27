@@ -2,6 +2,8 @@ import itertools
 import re
 import sys
 
+SCORES = { 'Q': 9, 'R': 5, 'B': 3.5, 'N': 3.25, 'P': 1 }
+
 tb7_file_list = [
     '4v3_pawnful.html',
     '4v3_pawnless.html',
@@ -10,8 +12,6 @@ tb7_file_list = [
     '6v1_pawnful.html',
     '6v1_pawnless.html',
 ]
-
-SCORES = { 'Q': 9, 'R': 5, 'B': 3.5, 'N': 3.25, 'P': 1 }
 
 max_score_diff = 9999
 if len(sys.argv) == 2:
@@ -26,18 +26,11 @@ def piece_combos_with_scores(n):
         yield (combo, sum([SCORES[p] for p in combo]))
 
 def combos_with_max_score_diff(max_score_diff):
-    for pc3 in piece_combos_with_scores(2):
-        for pc4 in piece_combos_with_scores(3):
-            if abs(pc4[1] - pc3[1]) <= max_score_diff:
-                yield((pc4, pc3))
-    for pc3 in piece_combos_with_scores(1):
-        for pc4 in piece_combos_with_scores(4):
-            if abs(pc4[1] - pc3[1]) <= max_score_diff:
-                yield((pc4, pc3))
-    for pc3 in piece_combos_with_scores(0):
-        for pc4 in piece_combos_with_scores(5):
-            if abs(pc4[1] - pc3[1]) <= max_score_diff:
-                yield((pc4, pc3))
+    for np1, np2 in ((2,3), (1,4), (0,5)):
+        for pc3 in piece_combos_with_scores(np1):
+            for pc4 in piece_combos_with_scores(np2):
+                if abs(pc4[1] - pc3[1]) <= max_score_diff:
+                    yield((pc4, pc3))
 
 def tb_filenames_with_max_score_diff(max_score_diff):
     for combos in combos_with_max_score_diff(max_score_diff):
