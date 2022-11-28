@@ -1,40 +1,138 @@
 #!/bin/bash
 
+dl_dir1="/dev/shm"
+dl_dir2="~/data/syzygy/7p"
+
 TB_URL="https://tablebase.lichess.ovh/tables/standard/7/"
-DL_DIRS=(
-  ../data/syzygy/7p
-  /dev/shm/
+
+tablebases_to_download=(
+KBBBvKQP
+KBBBvKRR
+KBBNvKQP
+KBBNvKRR
+KBBPPvKQ
+KBBPvKBB
+KBBPvKBN
+KBBPvKNN
+KBBPvKRB
+KBBPvKRN
+KBNNvKQP
+KBNNvKRB
+KBNNvKRR
+KBNPPvKQ
+KBNPvKBB
+KBNPvKBN
+KBNPvKNN
+KBNPvKRB
+KBNPvKRN
+KBPPPvKR
+KBPPvKBB
+KBPPvKBN
+KBPPvKBP
+KBPPvKNN
+KBPPvKNP
+KBPPvKRP
+KNNNvKQP
+KNNNvKRB
+KNNNvKRN
+KNNNvKRR
+KNNPPvKQ
+KNNPvKBB
+KNNPvKBN
+KNNPvKNN
+KNNPvKRB
+KNNPvKRN
+KNNPvKRP
+KNPPPvKR
+KNPPvKBN
+KNPPvKBP
+KNPPvKNN
+KNPPvKNP
+KNPPvKRP
+KPPPPvKB
+KPPPPvKN
+KPPPPvKR
+KPPPvKBP
+KPPPvKNP
+KPPPvKPP
+KQBPvKQB
+KQBPvKQN
+KQBPvKQR
+KQNNvKQR
+KQNPvKQB
+KQNPvKQN
+KQNPvKQR
+KQPPvKQB
+KQPPvKQN
+KQPPvKQP
+KQPPvKRR
+KQQPvKQQ
+KQRBvKQQ
+KQRNvKQQ
+KQRPvKQR
+KQRRvKQQ
+KRBBvKQB
+KRBBvKQN
+KRBNvKQB
+KRBNvKQN
+KRBPPvKQ
+KRBPvKQP
+KRBPvKRB
+KRBPvKRN
+KRBPvKRR
+KRNNvKQB
+KRNNvKQN
+KRNNvKQP
+KRNNvKRR
+KRNPPvKQ
+KRNPvKQP
+KRNPvKRB
+KRNPvKRN
+KRNPvKRR
+KRPPPvKQ
+KRPPvKBB
+KRPPvKBN
+KRPPvKNN
+KRPPvKRB
+KRPPvKRN
+KRPPvKRP
+KRRBvKQB
+KRRBvKQN
+KRRBvKQR
+KRRNvKQB
+KRRNvKQN
+KRRNvKQR
+KRRPvKQB
+KRRPvKQN
+KRRPvKQP
+KRRPvKRR
+KRRRvKQR
 )
 
-tablebases_7p=(
-  KQPPvKRR
-  KNPPvKNP
-  KPPPvKPP
-  KBPPvKBP
-  KNPPvKBP
-  KRPPvKNN
-  KBPPvKNN
-  KRPPvKBB
-  KRPPvKBN
-  KRPPvKRP
-  KBPPvKRP
-  KNPPvKRP
-  KQPPvKQP
-)
-
-function download_tb_data() {  # $1 = url_prefix, $2 = pieces
+function download_tb7_data() {
+  pieces=$1  # KRBPvKQP, etc.
   for suffix in {rtbw,rtbz}; do
-    tb_filename=$2.$suffix
-    if [ ! -f $DL_DIR/$tb_filename ]; then
-      echo $tb_filename not found. Downloading...
-      wget $1/$tb_filename -O $DL_DIR/$tb_filename
+    tb_filename=$pieces.$suffix
+    if [ -f $dl_dir1/$tb_filename ] || [ -f $dl_dir2/$tb_filename ]; then
+      continue
     fi
+    if echo $pieces | grep -E 'vK$' > /dev/null; then
+      subtype=6v1
+    elif echo $pieces | grep -E 'K[QRBN]{4}v' > /dev/null; then
+      subtype=5v2
+    else
+      subtype=4v3
+    fi
+    if echo $pieces | grep P > /dev/null; then
+      subtype=${subtype}_pawnful
+    else
+      subtype=${subtype}_pawnless
+    fi
+    echo $tb_filename not found. Downloading ${subtype} ...
+    # wget $TB_URL/$tb_filename -O $dl_dir1/$tb_filename
   done
 }
 
-for pieces in ${eg_5v2[@]}; do
-  download_tb_data $TB_URL/5v2_pawnful $pieces
-done
-for pieces in ${eg_4v3_7p[@]}; do
-  download_tb_data $TB_URL/4v3_pawnful $pieces
+for pieces in ${tablebases_to_download[@]}; do
+  download_tb7_data $pieces
 done
